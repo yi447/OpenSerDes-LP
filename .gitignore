@@ -1,0 +1,7 @@
+obj_dir/
+*.vcd
+*.fst
+*.log
+*.raw
+__pycache__/
+.vscode/
