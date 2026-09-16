@@ -1,0 +1,52 @@
+* ============================================================
+* OpenSerDes-LP
+* SKY130 1.8-V Low-Power Differential TX Driver
+* ============================================================
+
+.lib /home/eazyhoung/.ciel/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+
+.param VDDVAL=1.8
+
+* Supply
+VDD vdd 0 1.8
+
+* 1-Gb/s differential input
+VINP inp 0 PULSE(1.0 1.4 0 20p 20p 480p 1n)
+VINN inn 0 PULSE(1.4 1.0 0 20p 20p 480p 1n)
+
+* SKY130 NMOS differential pair
+XM1 outp inp tail 0 sky130_fd_pr__nfet_01v8 L=0.15 W=4
+XM2 outn inn tail 0 sky130_fd_pr__nfet_01v8 L=0.15 W=4
+
+* Resistive loads
+RL1 vdd outp 100
+RL2 vdd outn 100
+
+* Ideal 1-mA tail current
+ITAIL tail 0 DC 1m
+
+* Output load capacitance
+CLOADP outp 0 50f
+CLOADN outn 0 50f
+
+* Differential voltage monitor
+EDIFF vdiff 0 outp outn 1
+
+* Transient simulation
+.tran 2p 20n
+
+* Measurements
+.meas tran VDIFF_MAX MAX v(vdiff) FROM=2n TO=20n
+.meas tran VDIFF_MIN MIN v(vdiff) FROM=2n TO=20n
+
+.meas tran IAVG AVG I(VDD) FROM=2n TO=20n
+.meas tran PAVG PARAM='-1.8*IAVG'
+.meas tran EBIT PARAM='PAVG/1e9'
+
+.control
+run
+set wr_singlescale
+set wr_vecnames
+wrdata analog/results/tx_waveform.csv time v(inp) v(inn) v(outp) v(outn) v(vdiff)
+quit
+.endc
