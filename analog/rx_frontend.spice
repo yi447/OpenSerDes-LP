@@ -1,0 +1,64 @@
+* ============================================================
+* OpenSerDes-LP
+* SKY130 1.8-V Differential RX Front-End / Slicer
+* ============================================================
+
+.lib /home/eazyhoung/.ciel/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+
+* ------------------------------------------------------------
+* Supply
+* ------------------------------------------------------------
+VDD vdd 0 1.8
+
+* ------------------------------------------------------------
+* Differential input
+* 100 mV differential swing around 0.9-V common mode
+* 1-Gb/s test pattern
+* ------------------------------------------------------------
+VINP inp 0 PULSE(0.85 0.95 0 50p 50p 450p 1n)
+VINN inn 0 PULSE(0.95 0.85 0 50p 50p 450p 1n)
+
+* ------------------------------------------------------------
+* NMOS differential input pair
+* ------------------------------------------------------------
+XM1 n1   inp tail 0 sky130_fd_pr__nfet_01v8 L=0.15 W=4
+XM2 vamp inn tail 0 sky130_fd_pr__nfet_01v8 L=0.15 W=4
+
+* ------------------------------------------------------------
+* PMOS current-mirror active load
+* ------------------------------------------------------------
+XM3 n1   n1 vdd vdd sky130_fd_pr__pfet_01v8 L=0.15 W=8
+XM4 vamp n1 vdd vdd sky130_fd_pr__pfet_01v8 L=0.15 W=8
+
+* First prototype: ideal tail bias
+ITAIL tail 0 DC 200u
+
+* ------------------------------------------------------------
+* CMOS inverter slicer
+* ------------------------------------------------------------
+XMP rxout vamp vdd vdd sky130_fd_pr__pfet_01v8 L=0.15 W=4
+XMN rxout vamp 0   0   sky130_fd_pr__nfet_01v8 L=0.15 W=2
+
+* Output loading
+CLOAD rxout 0 20f
+
+* ------------------------------------------------------------
+* Simulation
+* ------------------------------------------------------------
+.tran 2p 20n
+
+.meas tran VOUT_MAX MAX v(rxout) FROM=2n TO=20n
+.meas tran VOUT_MIN MIN v(rxout) FROM=2n TO=20n
+.meas tran IAVG AVG I(VDD) FROM=2n TO=20n
+.meas tran PAVG PARAM='-1.8*IAVG'
+.meas tran EBIT PARAM='PAVG/1e9'
+
+.control
+run
+set wr_singlescale
+set wr_vecnames
+wrdata analog/results/rx_waveform.csv time v(inp) v(inn) v(vamp) v(rxout)
+quit
+.endc
+
+.end
