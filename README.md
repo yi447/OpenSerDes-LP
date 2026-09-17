@@ -1,125 +1,3 @@
-# OpenSerDes-LP
-
-Low-Power Mixed-Signal SerDes Link in SKY130 CMOS
-
-## Overview
-
-OpenSerDes-LP is a project that demonstrates the core building blocks of a low-power mixed-signal SerDes link.
-
-Current v0.1 focuses on:
-- PRBS7 data generation
-- 8:1 serializer
-- 1:8 deserializer
-- BER checking
-- channel error injection
-- eye diagram generation
-- loss / jitter / noise visualization
-
-This project is intended as an educational and portfolio project for mixed-signal / high-speed I/O / SerDes learning.
-
----
-
-## Features
-
-- **PRBS7 Generator**
-- **8-bit Serializer**
-- **8-bit Deserializer**
-- **Digital SerDes Loopback**
-- **BER Checker**
-- **Channel Error Injection**
-- **Eye Diagram Generation**
-- **Loss / Noise / Jitter Simulation**
-
----
-
-## Project Structure
-
-```text
-OpenSerDes-LP/
-├── rtl/
-│   ├── prbs7.sv
-│   ├── prbs7_byte_gen.sv
-│   ├── serializer8.sv
-│   ├── deserializer8.sv
-│   ├── prbs_checker.sv
-│   └── channel_model.sv
-├── tb/
-│   ├── tb_prbs7.sv
-│   ├── tb_serializer8.sv
-│   ├── tb_serdes_link.sv
-│   ├── tb_prbs_serdes.sv
-│   └── tb_channel_ber.sv
-├── scripts/
-│   ├── run_all.sh
-│   └── eye_diagram.py
-├── docs/
-│   └── results/
-│       ├── eye_clean.png
-│       ├── eye_lossy.png
-│       └── eye_jitter_noise.png
-├── analog/
-├── layout/
-├── README.md
-└── LICENSE
-
-
----
-
-## Results
-
-### Digital SerDes Link
-
-Clean-channel verification:
-
-- Total bits: 8000
-- Bit errors: 0
-- BER: 0
-
-Error-injection verification:
-
-- Total bits: 8000
-- Bit errors: 8
-- BER: 1e-3
-
-### Eye Diagrams
-
-#### Ideal Channel
-![Ideal Eye](docs/results/eye_clean.png)
-
-#### Bandwidth-Limited Channel
-![Lossy Eye](docs/results/eye_lossy.png)
-
-#### Loss + Jitter + Noise
-![Impaired Eye](docs/results/eye_jitter_noise.png)
-
----
-
-## SKY130 Differential TX
-
-- Process: SKY130A
-- Supply: 1.8 V
-- Data rate: 1 Gb/s
-- Differential Vpp: ~148.7 mV
-- Average power: ~1.80 mW
-- Energy/bit: ~1.80 pJ/bit
-
-![TX Differential](docs/results/tx_differential_waveform.png)
-
-![TX Vdiff](docs/results/tx_vdiff.png)
-
----
-
-## SKY130 RX Front-End
-
-- Differential input: ~100 mV
-- Output swing: ~0 V to 1.8 V
-- Average power: ~0.435 mW
-- Energy/bit: ~0.435 pJ/bit
-
-![RX Recovery](docs/results/rx_recovery_waveform.png)
-
----
-
 ## Current Link Performance
 
 | Metric | Result |
@@ -130,18 +8,66 @@ Error-injection verification:
 | TX power | ~1.80 mW |
 | RX power | ~0.435 mW |
 | TX + RX power | ~2.24 mW |
-| TX + RX energy | ~2.24 pJ/bit |
+| Energy efficiency | ~2.24 pJ/bit |
 
-> TX and RX analog prototypes currently use ideal tail-current sources. Future revisions will replace them with transistor-level bias circuits.
+## Verification Status
 
----
+| Block | Status |
+|---|---|
+| PRBS7 Generator | PASS |
+| 8-bit Serializer | PASS |
+| 8-bit Deserializer | PASS |
+| PRBS Checker | PASS |
+| Digital SerDes Loopback | PASS |
+| BER Error Detection | PASS |
+| Channel Model | PASS |
+| Eye Diagram Analysis | PASS |
+| SKY130 TX SPICE Simulation | PASS |
+| SKY130 RX SPICE Simulation | PASS |
+| TX Xschem Schematic | COMPLETE |
+| RX Xschem Schematic | COMPLETE |
+| Physical Layout | EXPERIMENTAL / WIP |
+| DRC / LVS | FUTURE WORK |
+
+## Simulation Results
+
+### Eye Diagrams
+
+Clean channel:
+
+![Clean Eye](docs/results/eye_clean.png)
+
+Lossy channel:
+
+![Lossy Eye](docs/results/eye_lossy.png)
+
+Jitter + noise:
+
+![Jitter Noise Eye](docs/results/eye_jitter_noise.png)
+
+### Analog TX
+
+![TX Differential Waveform](docs/results/tx_differential_waveform.png)
+
+### Analog RX
+
+![RX Recovery Waveform](docs/results/rx_recovery_waveform.png)
+
+## Physical Design
+
+A SKY130 physical-layout prototype was explored using Magic VLSI.
+
+The current layout demonstrates transistor placement and early routing of
+the differential pair. Physical verification is not yet DRC/LVS clean and
+is intentionally marked as work in progress.
 
 ## Future Work
 
-- CMOS bias circuit
-- Xschem schematic
-- TX/RX integration
-- DRC / LVS
+- Complete SKY130 TX/RX physical layout
+- Achieve DRC-clean layout
+- Perform Netgen LVS verification
+- Post-layout parasitic extraction
 - Post-layout simulation
+- CMOS bias circuit
 - Clock recovery
 - Equalization
